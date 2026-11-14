@@ -1,0 +1,1 @@
+export { CalendarioSemanal } from './components/CalendarioSemanal';
