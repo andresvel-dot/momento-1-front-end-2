@@ -21,7 +21,8 @@ export function usePlanSemanal(semanaId) {
         ]);
         if (!cancelado) {
           setNombrePlan(plan.nombre);
-          setBloques(plan.bloques);
+          // Asegura que se carguen los bloques iniciales del plan seleccionado
+          setBloques(plan.bloques ?? {});
           setRecetas(catalogo);
         }
       } catch (e) {

@@ -60,4 +60,10 @@ export const planServicio = {
     await esperar(LATENCIA_MS);
     return RECETAS;
   },
+
+  // IMPLEMENTACIÓN NUEVA: Retorna todos los planes registrados para mostrarlos en el historial
+  async obtenerListaPlanes() {
+    await esperar(LATENCIA_MS);
+    return Object.values(planes).map((p) => ({ id: p.id, nombre: p.nombre }));
+  },
 };
