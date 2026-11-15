@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { CalendarioSemanal } from './features/planificador/components/CalendarioSemanal';
 import { usePlanSemanal } from './features/planificador/hooks/usePlanSemanal';
 import { COMIDAS, DIAS_SEMANA, crearClave } from './features/planificador/utils/diasSemana';
+import { planServicio } from './features/planificador/services/planServicio';
 import './features/planificador/components/planificador.css';
 
 const CELULAS = [
@@ -100,11 +101,19 @@ export function App() {
   const [busquedaPlanId, setBusquedaPlanId] = useState('');
   const [diaCronograma, setDiaCronograma] = useState('Lunes');
 
-  // === FIX: estado del plan levantado a App, compartido entre Calendario y Cronograma ===
+  // Estado para la lista dinámica de planes creados
+  const [listaPlanes, setListaPlanes] = useState([]);
+
+  // Estado del plan levantado a App, compartido entre Calendario y Cronograma
   const planState = usePlanSemanal(semanaId);
   const { bloques, recetas } = planState;
 
-  // Mapa id -> receta y día seleccionado (convierte "Lunes" -> { id: 'lun', ... })
+  // Consultar la lista de planes actualizados al iniciar o cambiar de semana
+  useEffect(() => {
+    planServicio.obtenerListaPlanes().then(setListaPlanes).catch(() => {});
+  }, [semanaId]);
+
+  // Mapa id -> receta y día seleccionado
   const recetaPorId = useMemo(() => new Map(recetas.map((r) => [r.id, r])), [recetas]);
   const diaObj = useMemo(
     () => DIAS_SEMANA.find((d) => d.largo === diaCronograma) ?? DIAS_SEMANA[0],
@@ -121,7 +130,7 @@ export function App() {
   const buscarPlanPorId = (e) => {
     e.preventDefault();
     if (!busquedaPlanId.trim()) return;
-    setSemanaId(busquedaPlanId.trim());
+    setSemanaId(busquedaPlanId.trim().toLowerCase());
     setActiveTab('calendario');
     setBusquedaPlanId('');
   };
@@ -207,16 +216,19 @@ export function App() {
           </button>
         </div>
 
-        {/* VISTA 1: CALENDARIO SEMANAL — pasa el estado compartido */}
+        {/* VISTA 1: CALENDARIO SEMANAL */}
         {activeTab === 'calendario' && (
           <CalendarioSemanal
             semana={semanaId}
-            onPlanCreado={setSemanaId}
+            onPlanCreado={(nuevoId) => {
+              setSemanaId(nuevoId);
+              planServicio.obtenerListaPlanes().then(setListaPlanes).catch(() => {});
+            }}
             planState={planState}
           />
         )}
 
-        {/* VISTA 2: CRONOGRAMA DIARIO — ahora lee las recetas reales del plan */}
+        {/* VISTA 2: CRONOGRAMA DIARIO */}
         {activeTab === 'cronograma' && (
           <div className="card-box" style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -285,7 +297,7 @@ export function App() {
           </div>
         )}
 
-        {/* VISTA 4: PLANTILLAS & MENÚS (BÚSQUEDA POR ID) */}
+        {/* VISTA 4: PLANTILLAS & MENÚS (BÚSQUEDA Y HISTORIAL DINÁMICO) */}
         {activeTab === 'plantillas' && (
           <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
             <div className="card-box">
@@ -311,17 +323,28 @@ export function App() {
             <div className="card-box">
               <h3>Historial de Planes Semanales Creados</h3>
               <p className="label" style={{marginBottom: '12px'}}>Lista de tus planes personalizados en el sistema.</p>
-              <div className="week-item">
-                <div>
-                  <strong>Semana Principal</strong>
-                  <span className="label" style={{display:'block'}}>ID: semana-principal</span>
-                </div>
-                <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-                  <span className="label" style={{color: 'var(--accent)', fontWeight: 600}}>Activo (En uso)</span>
-                  <button type="button" className="btn btn-ghost" onClick={() => setActiveTab('calendario')}>
-                    <i className="bi bi-arrow-down-circle"></i> Cargar
-                  </button>
-                </div>
+              
+              <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                {listaPlanes.map((p) => {
+                  const esActivo = p.id === semanaId;
+                  return (
+                    <div className="week-item" key={p.id}>
+                      <div>
+                        <strong>{p.nombre}</strong>
+                        <span className="label" style={{display:'block'}}>ID: {p.id}</span>
+                      </div>
+                      <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
+                        {esActivo ? (
+                          <span className="label" style={{color: 'var(--accent)', fontWeight: 600}}>Activo (En uso)</span>
+                        ) : (
+                          <button type="button" className="btn btn-ghost" onClick={() => { setSemanaId(p.id); setActiveTab('calendario'); }}>
+                            <i className="bi bi-arrow-down-circle"></i> Cargar
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
