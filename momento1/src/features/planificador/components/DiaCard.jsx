@@ -1,23 +1,43 @@
-export function DiaCard({ dia, comidas }) {
+import { COMIDAS, crearClave } from '../utils/diasSemana';
+
+export function DiaCard({ dia, bloques, recetaPorId, onAbrirSelector, onQuitar }) {
   return (
     <article className="planificador-dia-card">
-      <h3 className="planificador-dia-card__titulo">
-        <span className="planificador-dia-card__corto">{dia.corto}</span>
-        <span className="planificador-dia-card__largo">{dia.largo}</span>
-      </h3>
+      <h3 className="cell-head">{dia.largo}</h3>
 
-      {comidas.length === 0 ? (
-        <p className="planificador-dia-card__vacio">Sin comidas planeadas</p>
-      ) : (
-        <ul className="planificador-dia-card__lista">
-          {comidas.map((comida) => (
-            <li key={comida.id} className="planificador-dia-card__comida">
-              <span className="planificador-dia-card__tipo">{comida.tipo}</span>
-              <span>{comida.nombre}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+      {COMIDAS.map((comida) => {
+        const clave = crearClave(dia.id, comida.id);
+        const ids = bloques[clave] ?? [];
+
+        return (
+          <div key={comida.id} className="slot">
+            <ul className="slot-list">
+              {ids.map((id, indice) => (
+                <li key={`${id}-${indice}`} className="chip">
+                  <span className="n">{recetaPorId.get(id)?.nombre}</span>
+                  <button
+                    type="button"
+                    className="chip-x"
+                    aria-label={`Quitar ${recetaPorId.get(id)?.nombre}`}
+                    onClick={() => onQuitar(clave, indice)}
+                  >
+                    <i className="bi bi-x-lg" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              type="button"
+              className="slot-add"
+              aria-label={`Agregar receta a ${comida.label} del ${dia.largo}`}
+              onClick={() => onAbrirSelector({ clave, etiqueta: `${comida.label} · ${dia.largo}` })}
+            >
+              <i className="bi bi-plus-lg" /> Agregar
+            </button>
+          </div>
+        );
+      })}
     </article>
   );
 }

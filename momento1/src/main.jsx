@@ -1,12 +1,11 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './App.jsx'
-import './styles/sazon.css'
-
-document.documentElement.dataset.theme = 'day'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import './styles/fonts.css';
+import './styles/sazon.css';
+import { App } from './App';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
-  </StrictMode>,
-)
+  </StrictMode>
+);
