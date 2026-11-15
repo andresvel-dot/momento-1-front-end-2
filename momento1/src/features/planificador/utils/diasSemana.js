@@ -1,9 +1,16 @@
 export const DIAS_SEMANA = Object.freeze([
-  { id: 'lun', corto: 'Lun', largo: 'Lunes' },
-  { id: 'mar', corto: 'Mar', largo: 'Martes' },
-  { id: 'mie', corto: 'Mié', largo: 'Miércoles' },
-  { id: 'jue', corto: 'Jue', largo: 'Jueves' },
-  { id: 'vie', corto: 'Vie', largo: 'Viernes' },
-  { id: 'sab', corto: 'Sáb', largo: 'Sábado' },
-  { id: 'dom', corto: 'Dom', largo: 'Domingo' },
+  { id: 'lun', largo: 'Lunes' },
+  { id: 'mar', largo: 'Martes' },
+  { id: 'mie', largo: 'Miércoles' },
+  { id: 'jue', largo: 'Jueves' },
+  { id: 'vie', largo: 'Viernes' },
 ]);
+
+export const COMIDAS = Object.freeze([
+  { id: 'desayuno', label: 'Desayuno', icono: 'bi-cup-hot' },
+  { id: 'almuerzo', label: 'Almuerzo', icono: 'bi-egg-fried' },
+  { id: 'merienda', label: 'Merienda', icono: 'bi-cookie' },
+  { id: 'cena', label: 'Cena', icono: 'bi-moon-stars' },
+]);
+
+export const crearClave = (diaId, comidaId) => `${diaId}|${comidaId}`;
